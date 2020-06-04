@@ -11,7 +11,6 @@ import cv2
 import matplotlib.pyplot as plt
 import cvlib as cv
 from cvlib.object_detection import draw_bbox
-import pandas as pd
 import os
 
 def one_cam_paths(cam_folder_path):
@@ -21,8 +20,10 @@ def one_cam_paths(cam_folder_path):
     image_files.extend(filenames)
     break
 
-  # trim off .DS file
-  image_files = image_files[0:-1]
+   # remove .DS file
+  DS = ".DS_Store"
+  if DS in image_files: 
+    image_files.remove(DS)
   
   # generate full file paths for each image the the cam
   image_paths = [cam_folder_path + img for img in image_files]
