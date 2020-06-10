@@ -24,6 +24,22 @@ def get_webcam_links(url):
     image_links = html.xpath("//img[contains(@class, 'fr-dii')]/@src")
     return image_links
 
+def dict_of_links(url):
+    response = requests.get(url)
+    response.raise_for_status()
+    # parse response to html
+    html = lx.fromstring(response.text)
+    html.make_links_absolute(url)    
+
+    # count the number of pages with images
+    image_links = html.xpath("//img[contains(@class, 'fr-dii')]/@src")
+    
+    cam_names = [url.split("/")[-2] for url in image_links]
+    
+    link_dictionary = {cam_names[i]: image_links[i] for i in range(len(cam_names))}
+    return link_dictionary
+    
+
 # save image to file
 def save_image(image_link, file_path):
     with open(file_path, 'wb') as handle:
