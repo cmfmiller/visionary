@@ -208,3 +208,65 @@ def add_new_images(new_folder, all_csv_path, validate = False, val_csv_path = np
     all_days = pd.concat([previous, merged])
     
     return(all_days)
+
+def latest_image(folder_path):
+    '''
+    Get the file path to the most recent file in a folder
+
+    Parameters
+    ----------
+    folder_path : STR
+        file path to folder containing files you want to search for the most recent file
+
+    Returns
+    -------
+    latest_file : STR
+        absolute file path to the most recent file
+
+    '''
+    list_of_files = glob.glob(folder_path) # * means all if need specific format then *.csv
+    latest_file = max(list_of_files, key=os.path.getctime)
+    return latest_file
+
+
+def add_current_images(image_folder, all_csv_path):
+    '''
+    Add the car counts of most recent images to the complete datafile
+
+    Parameters
+    ----------
+    image_folder : STR
+        file path to the folder containing raw data that has been scraped
+    all_csv_path : STR
+        file path to complete datafile
+
+    Returns
+    -------
+    all_data : Pandas dataframe
+        updated data frame containing data from the latest images.
+
+    '''
+    # previous data 
+    previous = pd.read_csv(all_csv_path)
+    
+    cam_list = []
+    for (dirpath, dirnames, filenames) in os.walk(image_folder):
+        cam_list.extend(dirnames)
+        break
+    
+    cam_paths = [base_path + cam + "/*" for cam in cam_list]
+    
+    new_image_paths = [latest_image(path) for path in cam_paths]
+    
+    new_counts = [yolo_counts_dict(image) for image in new_image_paths] # time limiting step
+    new_df = pd.DataFrame(new_counts)
+    
+    # format datetime
+    date_format ='%d-%m-%Y-%H-%M'
+    new_df['date_time'] = pd.to_datetime(new_df['date_time'], format = date_format)
+    
+    all_data = pd.concat([previous, new_df])
+    
+    return(all_data)
+
+
