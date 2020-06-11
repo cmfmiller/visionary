@@ -64,10 +64,9 @@ def retrieve_webcam_images(url, base_file_path = "../data/raw/"):
     cam_names = [url.split("/")[-2] for url in image_links]
     
     # get current time
-    now_naive =  datetime.datetime.now()
-    timezone = pytz.timezone("America/Los_Angeles")
-    now_aware = timezone.localize(now_naive)
-    dt_string = now_aware.strftime("%d-%m-%Y-%H-%M") 
+    utc_now = pytz.utc.localize(datetime.datetime.utcnow())
+    pst_now = utc_now.astimezone(pytz.timezone("America/Los_Angeles"))
+    dt_string = pst_now.strftime("%d-%m-%Y-%H-%M") 
     
     # generate file paths
     file_paths = []
