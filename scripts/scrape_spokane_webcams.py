@@ -11,5 +11,5 @@ import scrape_spokane_functions as ssf
 
 spokane_webcams = "https://www.spokanecounty.org/4214/Trailhead-Web-Cams"
 
-ssf.retrieve_webcam_images(spokane_webcams)
+ssf.retrieve_webcam_images(spokane_webcams, "visionary/data/raw/")
 
