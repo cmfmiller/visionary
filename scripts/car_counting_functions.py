@@ -265,8 +265,10 @@ def add_current_images(image_folder, all_csv_path):
     # format datetime
     date_format ='%d-%m-%Y-%H-%M'
     new_df['date_time'] = pd.to_datetime(new_df['date_time'], format = date_format)
+    new_df = new_df.drop(['file_name'], 1)
     
     all_data = pd.concat([previous, new_df])
+    all_data.dropna(axis=0, how= 'any')
     
     return(all_data)
 
