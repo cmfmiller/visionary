@@ -14,6 +14,7 @@ from cvlib.object_detection import draw_bbox
 import os
 import numpy as np
 import pandas as pd
+import glob
 
 def one_cam_paths(cam_folder_path):
     """
@@ -254,7 +255,7 @@ def add_current_images(image_folder, all_csv_path):
         cam_list.extend(dirnames)
         break
     
-    cam_paths = [base_path + cam + "/*" for cam in cam_list]
+    cam_paths = [image_folder + cam + "/*" for cam in cam_list]
     
     new_image_paths = [latest_image(path) for path in cam_paths]
     
