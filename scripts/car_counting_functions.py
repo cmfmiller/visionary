@@ -155,7 +155,7 @@ def yolo_counts_dict(image_path):
     
     return {"Parking_lot": cam_name, 
             "file_name": file_name,  
-            "time": date_time, 
+            "date_time": date_time, 
             "yolo_car_count" : yolo_count}
 
 def add_new_images(new_folder, all_csv_path, validate = False, val_csv_path = np.nan):
@@ -194,7 +194,7 @@ def add_new_images(new_folder, all_csv_path, validate = False, val_csv_path = np
     
     # format datetime
     date_format ='%d-%m-%Y-%H-%M'
-    new_df['date_time'] = pd.to_datetime(new_df['time'], format = date_format)
+    new_df['date_time'] = pd.to_datetime(new_df['date_time'], format = date_format)
     
     # merge datasets
     if validate: 
@@ -264,7 +264,7 @@ def add_current_images(image_folder, all_csv_path):
     
     # format datetime
     date_format ='%d-%m-%Y-%H-%M'
-    new_df['date_time'] = pd.to_datetime(new_df['time'], format = date_format)
+    new_df['date_time'] = pd.to_datetime(new_df['date_time'], format = date_format)
     new_df = new_df.drop(['file_name'], 1)
     
     all_data = pd.concat([previous, new_df])
