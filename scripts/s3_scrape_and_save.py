@@ -41,12 +41,12 @@ new_df = new_df.drop(['file_name'], 1)
 #print(new_df)
 
 previous = pd.read_csv(all_csv_path)
-print(len(previous))
-print(len(new_df))
+#print(len(previous))
+#print(len(new_df))
 
 all_data = pd.concat([previous, new_df])
 all_data.dropna(axis=0, how= 'any')
-print(len(all_data))
+#print(len(all_data))
 
 all_data.to_csv(all_csv_path)
 
