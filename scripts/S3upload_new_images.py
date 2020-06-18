@@ -33,7 +33,12 @@ most_recent_files = [ccf.latest_image(path) for path in cam_paths]
 # create S3 file paths for files
 s3_file_paths = [path.split("visionary/")[-1] for path in most_recent_files] 
 
+# save new images to s3
 s3_resource = boto3.resource('s3')
 
 for image, path in zip(most_recent_files, s3_file_paths): 
     s3_resource.Bucket(bucket).upload_file(Filename = image , Key = path)
+
+# delete files from EC2
+for image in most_recent_files:
+    os.remove(image)
