@@ -25,6 +25,7 @@ s3client = boto3.client('s3',
 response = s3client.get_object(Bucket = bucket, Key = data_file)
 body = response["Body"].read()
 previous = pd.read_csv(io.BytesIO(body))
+print(previous.info())
 print(previous.tail())
 
 # find most recent cam pictures on EC2
@@ -53,10 +54,12 @@ new_df = new_df.drop(['file_name'], 1)
 # add new data too historical dataframe
 all_data = pd.concat([previous, new_df])
 all_data.dropna(axis=0, how= 'any')
+all_data.drop_duplicates(inplace = True)
+print(all_data.info())
 print(all_data.tail())
 
 # over write datafile in S3
 s3_resource = boto3.resource('s3')
 csv_buffer = io.StringIO()
-all_data.to_csv(csv_buffer)
+all_data.to_csv(csv_buffer, index=False)
 s3_resource.Object(bucket, 'data/processed/just_yolo.csv').put(Body=csv_buffer.getvalue())

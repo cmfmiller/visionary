@@ -2,7 +2,7 @@ import boto3
 import os
 import glob
 import car_counting_functions as ccf
-
+import numpy as np
 
 # S3 bucket
 bucket='visionarybucket'
@@ -28,17 +28,20 @@ for (dirpath, dirnames, filenames) in os.walk(ec2_folder):
 
 cam_paths = [ec2_folder + cam + "/*" for cam in cam_list]
 
+# retreive most recent files from EC2
 most_recent_files = [ccf.latest_image(path) for path in cam_paths]
+filtered = list(filter(None, most_recent_files)) # remove all None values for missing images
+#print(filtered)
 
 # create S3 file paths for files
-s3_file_paths = [path.split("visionary/")[-1] for path in most_recent_files] 
+s3_file_paths = [path.split("visionary/")[-1] if !isna(path) else None for path in filtered] 
 
 # save new images to s3
 s3_resource = boto3.resource('s3')
 
-for image, path in zip(most_recent_files, s3_file_paths): 
+for image, path in zip(filtered, s3_file_paths): 
     s3_resource.Bucket(bucket).upload_file(Filename = image , Key = path)
 
 # delete files from EC2
-for image in most_recent_files:
+for image in filtered:
     os.remove(image)

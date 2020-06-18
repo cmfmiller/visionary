@@ -226,7 +226,12 @@ def latest_image(folder_path):
 
     '''
     list_of_files = glob.glob(folder_path) # * means all if need specific format then *.csv
-    latest_file = max(list_of_files, key=os.path.getctime)
+    try:
+        latest_file = max(list_of_files, key=os.path.getctime)
+    except:
+        latest_file = None
+        print("empty_folder")
+
     return latest_file
 
 
