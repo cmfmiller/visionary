@@ -120,8 +120,8 @@ def plot_current(df):
     st.pyplot()
 
 """
-# Trailhead Tracks
-Live updates and forcasts of parking availability at Spokane County Trailheads
+# Trailheads-Up
+Live updates and forecasts of trailhead popularity
 """
 
 #View_webcams = st.sidebar.checkbox("View Webcams")
