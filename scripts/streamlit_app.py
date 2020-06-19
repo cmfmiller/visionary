@@ -9,9 +9,35 @@ import car_counting_functions as ccf
 import glob
 import os
 import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 import datetime
 #import plotly.express as px
 import pytz
+import boto3
+import io
+from PIL import Image 
+
+# file and bucket names
+bucket = 'visionarybucket'
+data_file = "data/processed/just_yolo.csv"
+
+# access S3 bucket
+cred = boto3.Session().get_credentials()
+ACCESS_KEY = cred.access_key
+SECRET_KEY = cred.secret_key
+SESSION_TOKEN = cred.token  ## optional
+
+s3client = boto3.client('s3',
+    aws_access_key_id = ACCESS_KEY,
+    aws_secret_access_key = SECRET_KEY,
+    aws_session_token = SESSION_TOKEN)
+
+# read in historical data file to data frame from S3 bucket
+response = s3client.get_object(Bucket = bucket, Key = data_file)
+body = response["Body"].read()
+dateparse = lambda x: pd.datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+current_data = pd.read_csv(io.BytesIO(body), parse_dates=['date_time'], date_parser=dateparse)
+#print(current_data.info())
 
 # is today a weekend?
 weekday, weekend = (0,1,2,3,4) , (6,5)
@@ -23,8 +49,8 @@ pst_now = utc_now.astimezone(pytz.timezone("America/Los_Angeles"))
 hour = int (pst_now.strftime("%H"))
 
 # read in data
-dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
-current_data = pd.read_csv("visionary/data/processed/just_yolo.csv", parse_dates=['date_time'], date_parser=dateparse)
+#dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+#current_data = pd.read_csv("visionary/data/processed/just_yolo.csv", parse_dates=['date_time'], date_parser=dateparse)
 
 # calculate poplular times based on most recent data
 indexed = current_data.set_index( "date_time")
@@ -51,22 +77,50 @@ current_data["yolo_pct"] = current_data.groupby(["Parking_lot"]).yolo_car_count.
 current_data["yolo_pct"] = current_data["yolo_pct"].replace(np.nan, 0)
 
 # find most recent webcam images
-def latest_image(folder_path):
-    list_of_files = glob.glob(folder_path) # * means all if need specific format then *.csv
-    latest_file = max(list_of_files, key=os.path.getctime)
-    return latest_file
 
-image_folder = "visionary/data/raw/"    
+def get_latest_file_name(bucket_name,file_path):
+    """
+    Return the latest file name in an S3 bucket folder.
+
+    :param bucket: Name of the S3 bucket.
+    :param prefix: Only fetch keys that start with this prefix (folder  name).
+    """
+    try:
+        get_last_modified = lambda obj: int(obj['LastModified'].strftime('%s'))
+        objs = s3client.list_objects_v2(Bucket=bucket_name, Prefix= file_path)['Contents']
+        last_added = [obj['Key'] for obj in sorted(objs, key=get_last_modified)][-1]
+    except:
+        last_added = None
+    
+    return last_added
+
+ec2_image_folder = "visionary/data/raw/"
 cam_list = []
-for (dirpath, dirnames, filenames) in os.walk(image_folder):
+for (dirpath, dirnames, filenames) in os.walk(ec2_image_folder):
     cam_list.extend(dirnames)
     break
 
-cam_paths = [image_folder + cam + "/*" for cam in cam_list]    
-new_image_paths = [latest_image(path) for path in cam_paths]
-new_image_dict = {cam:image for cam, image in zip(cam_list, new_image_paths)}
+s3_folders = [ec2_image_folder.split("visionary/")[-1] + cam + "/" for cam in cam_list]    
+new_image_paths = [get_latest_file_name(bucket, folder) for folder in s3_folders]
+new_image_dict = {webcam:path for webcam, path in zip(cam_list, new_image_paths)}
 
 #ploting functions
+def show_webcam(bucket_name, image_path):
+    try:
+        s3 = boto3.resource('s3')
+        s3bucket = s3.Bucket(bucket_name)
+        image_object = s3bucket.Object(image_path)
+        image = mpimg.imread(io.BytesIO(image_object.get()['Body'].read()), 'jpg')
+    
+        fig, ax = plt.subplots()
+        ax.axis('off')
+        ax.imshow(image)
+        fig.tight_layout()
+
+        st.pyplot()
+    except:
+        st.text("Webcam down")
+
 def plot_popular_times(df, hour):
     labels = list(df.date_time)
     x = np.arange(len(df.date_time))  # the label locations
@@ -132,12 +186,13 @@ Live updates and forecasts of trailhead popularity
 """
 # most rendent car count for antoine W
 just_ant = current_data[current_data.Parking_lot == "AntoineW"]
-ant_current = just_ant[just_ant["date_time"] == max(just_ant.date_time)]
+ant_current = just_ant[just_ant.date_time == max(just_ant.date_time)]
 
 plot_current(ant_current)
 
 if st.checkbox("Antoine Peak West Webcam"):
-    st.image(new_image_dict["AntoineW"], use_column_width = True)
+    show_webcam(bucket, new_image_dict["AntoineW"])
+#st.image(new_image_dict["AntoineW"], use_column_width = True)
 
 #if View_webcams:
 #    st.image(new_image_dict["AntoineW"])
@@ -156,13 +211,16 @@ if st.checkbox("Antoine Peak West Popular Times"):
 """
 ## Stevens Creek Trailhead (Dishman Hills - Iller Creek Unit)
 """
-just_ste = current_data[current_data.Parking_lot == "StevensCreek"]
-ste_current = just_ste[just_ste["date_time"] == max(just_ste.date_time)]
+st.text("Stevens Creek Webcam is under repair. Be back soon!")
+#just_ste = current_data[current_data.Parking_lot == "StevensCreek"]
+#ste_current = just_ste[just_ste["date_time"] == max(just_ste.date_time)]
 
-plot_current(ste_current)
+#plot_current(ste_current)
 
 if st.checkbox("Stevens Creek Webcam"):
-    st.image(new_image_dict["StevensCreek"],use_column_width = True)
+    st.text("webcam down")
+    #show_webcam(bucket, new_image_dict["StevensCreek"])   
+    #st.image(new_image_dict["StevensCreek"],use_column_width = True)
 
 #if View_webcams:
 #    st.image(new_image_dict["StevensCreek"])
@@ -183,8 +241,9 @@ ill_current = just_ill[just_ill["date_time"] == max(just_ill.date_time)]
 
 plot_current(ill_current)
 
-if st.checkbox("Iller Creek Webcams"):
-    st.image(new_image_dict["IllerCreek"], use_column_width = True )
+if st.checkbox("Iller Creek Webcam"):
+    show_webcam(bucket, new_image_dict["IllerCreek"])    
+#st.image(new_image_dict["IllerCreek"], use_column_width = True )
 
 #if View_webcams:
 #    st.image(new_image_dict["IllerCreek"])
@@ -207,7 +266,8 @@ glen_current = just_glen[just_glen["date_time"] == max(just_glen.date_time)]
 plot_current(glen_current)
 
 if st.checkbox("Glenrose Webcam"):
-    st.image(new_image_dict["Glenrose"], use_column_width = True )
+    show_webcam(bucket, new_image_dict["Glenrose"])
+    #st.image(new_image_dict["Glenrose"], use_column_width = True )
 
 #if View_webcams:
 #    st.image(new_image_dict["Glenrose"])
@@ -230,7 +290,8 @@ slv_current = just_slv[just_slv["date_time"] == max(just_slv.date_time)]
 plot_current(slv_current)
 
 if st.checkbox("Slavin Creek Webcam"):
-    st.image(new_image_dict["Slavin"], use_column_width = True)
+    show_webcam(bucket, new_image_dict["Slavin"])
+    #st.image(new_image_dict["Slavin"], use_column_width = True)
 
 #if View_webcams:
 #    st.image(new_image_dict["Slavin"])

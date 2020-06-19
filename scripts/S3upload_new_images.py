@@ -34,7 +34,7 @@ filtered = list(filter(None, most_recent_files)) # remove all None values for mi
 #print(filtered)
 
 # create S3 file paths for files
-s3_file_paths = [path.split("visionary/")[-1] if !isna(path) else None for path in filtered] 
+s3_file_paths = [path.split("visionary/")[-1] for path in filtered] 
 
 # save new images to s3
 s3_resource = boto3.resource('s3')
