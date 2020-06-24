@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import time
 #import scrape_spokane_functions as ssf
-import car_counting_functions as ccf
+#import car_counting_functions as ccf
 import glob
 import os
 import matplotlib.pyplot as plt
@@ -35,7 +35,7 @@ s3client = boto3.client('s3',
 # read in historical data file to data frame from S3 bucket
 response = s3client.get_object(Bucket = bucket, Key = data_file)
 body = response["Body"].read()
-dateparse = lambda x: pd.datetime.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
+dateparse = lambda x: pd.datetime.strptime(x, '%Y-%m-%d %H:%M:%S')
 current_data = pd.read_csv(io.BytesIO(body), parse_dates=['date_time'], date_parser=dateparse)
 #print(current_data.info())
 
@@ -211,15 +211,15 @@ if st.checkbox("Antoine Peak West Popular Times"):
 """
 ## Stevens Creek Trailhead (Dishman Hills - Iller Creek Unit)
 """
-st.text("Stevens Creek Webcam is under repair. Be back soon!")
-#just_ste = current_data[current_data.Parking_lot == "StevensCreek"]
-#ste_current = just_ste[just_ste["date_time"] == max(just_ste.date_time)]
+#st.text("Stevens Creek Webcam is under repair. Be back soon!")
+just_ste = current_data[current_data.Parking_lot == "StevensCreek"]
+ste_current = just_ste[just_ste["date_time"] == max(just_ste.date_time)]
 
-#plot_current(ste_current)
+plot_current(ste_current)
 
 if st.checkbox("Stevens Creek Webcam"):
-    st.text("webcam down")
-    #show_webcam(bucket, new_image_dict["StevensCreek"])   
+    #st.text("webcam down")
+    show_webcam(bucket, new_image_dict["StevensCreek"])   
     #st.image(new_image_dict["StevensCreek"],use_column_width = True)
 
 #if View_webcams:
