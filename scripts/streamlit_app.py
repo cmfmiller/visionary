@@ -69,11 +69,15 @@ weekday_vs_weekend = weekday_vs_weekend.reset_index()
 
 # calculate percentile of the car counts by parking lot, excluding zeros for summary data and all data
 weekday_vs_weekend["yolo_car_count"]  = weekday_vs_weekend["yolo_car_count"].replace(0, np.nan)
-weekday_vs_weekend["yolo_pct"] = weekday_vs_weekend.groupby(["Parking_lot"]).yolo_car_count.rank(pct=True)
+dist =  weekday_vs_weekend.groupby('Parking_lot').yolo_car_count.transform('max')
+weekday_vs_weekend["yolo_pct"]= weekday_vs_weekend.yolo_car_count.div(dist)*100
+#weekday_vs_weekend["yolo_pct"] = weekday_vs_weekend.groupby(["Parking_lot"]).yolo_car_count.rank(pct=True)
 weekday_vs_weekend["yolo_pct"] = weekday_vs_weekend["yolo_pct"].replace(np.nan, 0)
 
 current_data["yolo_car_count"] = current_data["yolo_car_count"].replace(0, np.nan)
-current_data["yolo_pct"] = current_data.groupby(["Parking_lot"]).yolo_car_count.rank(pct=True)
+dist_all =  current_data.groupby('Parking_lot').yolo_car_count.transform('max')
+current_data["yolo_pct"]= current_data.yolo_car_count.div(dist)*100
+#current_data["yolo_pct"] = current_data.groupby(["Parking_lot"]).yolo_car_count.rank(pct=True)
 current_data["yolo_pct"] = current_data["yolo_pct"].replace(np.nan, 0)
 
 # find most recent webcam images
@@ -128,9 +132,9 @@ def plot_popular_times(df, hour):
     width = 0.8
 
     fig, ax = plt.subplots()
-    mask1 = y < 0.5
-    mask2 = (y >= 0.5) & (y < .75)
-    mask3 = y >= .75
+    mask1 = y < 50
+    mask2 = (y >= 50) & (y < 75)
+    mask3 = y >= 75
     now_mask = x == hour
 
     plt.bar(x[now_mask], y[now_mask] + .01, width = 1.1)
@@ -143,7 +147,7 @@ def plot_popular_times(df, hour):
     ax.set_title('Popular Times Today')
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
-    plt.ylim(top = 1)
+    plt.ylim(top = 100)
 
     fig.tight_layout()
 
@@ -154,9 +158,9 @@ def plot_current(df):
     x = np.arange(len(df.date_time))  # the label locations
     y = float(df.yolo_pct)
 
-    mask1 = y < 0.5
-    mask2 = (y >= 0.5) & (y < .75)
-    mask3 = y >= .75
+    mask1 = y < 50
+    mask2 = (y >= 50) & (y < 75)
+    mask3 = y >= 75
 
     fig, ax = plt.subplots(figsize=(10, 1))
     if mask1:
@@ -167,7 +171,7 @@ def plot_current(df):
         plt.barh(labels, y, color = '#b64201')
 
     ax.set_title('Current Popularity')
-    plt.xlim(0,1)
+    plt.xlim(0,100)
 
     fig.tight_layout()
 
