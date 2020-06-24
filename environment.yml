@@ -1,6 +1,0 @@
-language: python36
-services:
-  - steamily
-install:
-  - pip install -r requirements.travis.txt
-script:
