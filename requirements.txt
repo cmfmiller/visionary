@@ -1,19 +1,16 @@
-matplotlib
-plotly==4.7.1
-jupyter==1.0.0
 numpy
+pandas
+matplotlib
+tensorflow
+keras==2.3.1
 requests==2.22.0 
-pandas==1.0.4
 opencv-python==4.2.0.34
 cvlib == 0.2.5
 scikit-learn==0.22.1
-tensorflow
-keras==2.3.1
-lxml==4.5.0
+lnxml==4.5.0
 streamlit
 boto3 
-PIL
 pytz
-glob
-datetime
-time
+glob3
+
+
