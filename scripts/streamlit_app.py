@@ -76,7 +76,7 @@ weekday_vs_weekend["yolo_pct"] = weekday_vs_weekend["yolo_pct"].replace(np.nan, 
 
 current_data["yolo_car_count"] = current_data["yolo_car_count"].replace(0, np.nan)
 dist_all =  current_data.groupby('Parking_lot').yolo_car_count.transform('max')
-current_data["yolo_pct"]= current_data.yolo_car_count.div(dist)*100
+current_data["yolo_pct"]= current_data.yolo_car_count.div(dist_all)*100
 #current_data["yolo_pct"] = current_data.groupby(["Parking_lot"]).yolo_car_count.rank(pct=True)
 current_data["yolo_pct"] = current_data["yolo_pct"].replace(np.nan, 0)
 
@@ -137,7 +137,7 @@ def plot_popular_times(df, hour):
     mask3 = y >= 75
     now_mask = x == hour
 
-    plt.bar(x[now_mask], y[now_mask] + .01, width = 1.1)
+    plt.bar(x[now_mask], y[now_mask] + 1, width = 1.1)
     plt.bar(x[mask1], y[mask1], color = "#508104", width = width)
     plt.bar(x[mask2], y[mask2], color = "#f3b800", width = width)
     plt.bar(x[mask3], y[mask3], color = '#b64201', width = width)
@@ -170,7 +170,7 @@ def plot_current(df):
     if mask3:
         plt.barh(labels, y, color = '#b64201')
 
-    ax.set_title('Current Popularity')
+    ax.set_title('Current Parking Lot Occupancy')
     plt.xlim(0,100)
 
     fig.tight_layout()
@@ -180,6 +180,8 @@ def plot_current(df):
 """
 # Trailheads-Up
 Live updates and forecasts of trailhead popularity
+
+for [Spokane County Washington Parks and Recreation Area](https://www.spokanecounty.org/4214/Trailhead-Web-Cams)
 """
 
 #View_webcams = st.sidebar.checkbox("View Webcams")
